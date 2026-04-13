@@ -13,6 +13,10 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: 5432,
+  // ADD THIS SECTION BELOW
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 // Create Table if it doesn't exist
