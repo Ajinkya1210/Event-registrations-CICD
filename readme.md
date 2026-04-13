@@ -13,8 +13,10 @@ Provisions secure AWS RDS infrastructure via Terraform with encrypted database c
 
 ![Architecture](photos/3.png)
 
-### App page
+### App homepage
 
 ![App page](photos/1.png)
 
 ![App page](photos/2.png)
+
+![App page](photos/4.png)
