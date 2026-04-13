@@ -1,0 +1,87 @@
+pipeline {
+    agent any
+
+    environment {
+        // Change these to your actual Docker Hub details
+        DOCKER_HUB_USER = 'ajinkyadesai2323'
+        APP_NAME        = 'registration-app'
+        IMAGE_TAG       = "latest"
+        
+        // Port mapping: Host 80 -> Container 3000
+        PORT_MAPPING    = "80:3000"
+    }
+
+    stages {
+        stage('Cleanup Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+
+        stage('Checkout Code') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo "Building Docker Image..."
+                    sh "docker build -t ${DOCKER_HUB_USER}/${APP_NAME}:${IMAGE_TAG} ."
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    // Use the 'Secret Text' ID you created in Jenkins for your Docker Hub Token
+                    withCredentials([string(credentialsId: 'DOCKERHUB_CRED', variable: 'TOKEN')]) {
+                        sh "echo \$TOKEN | docker login -u ${DOCKER_HUB_USER} --password-stdin"
+                        sh "docker push ${DOCKER_HUB_USER}/${APP_NAME}:${IMAGE_TAG}"
+                    }
+                }
+            }
+        }
+
+        stage('Local Deploy') {
+            steps {
+                script {
+                    // Injecting RDS secrets from Jenkins Credentials
+                    withCredentials([
+                        string(credentialsId: 'DB_HOST', variable: 'HOST'),
+                        string(credentialsId: 'DB_PASSWORD', variable: 'PWD')
+                    ]) {
+                        echo "Deploying container to Jenkins Server..."
+                        
+                        // Stop and remove the old container if it exists
+                        sh "docker stop ${APP_NAME} || true"
+                        sh "docker rm ${APP_NAME} || true"
+
+                        // Run the new container
+                        sh """
+                        docker run -d \
+                        --name ${APP_NAME} \
+                        -p ${PORT_MAPPING} \
+                        -e DB_HOST=${HOST} \
+                        -e DB_USER=postgres \
+                        -e DB_PASSWORD=${PWD} \
+                        -e DB_NAME=registration_db \
+                        ${DOCKER_HUB_USER}/${APP_NAME}:${IMAGE_TAG}
+                        """
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Successfully deployed to http://54.91.216.235"
+        }
+        failure {
+            echo "Pipeline failed. Check the logs."
+        }
+    }
+}

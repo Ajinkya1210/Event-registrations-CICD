@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevOps Pro | Registration</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-circles">
+        <div class="circle circle-1"></div>
+        <div class="circle circle-2"></div>
+    </div>
+
+    <main class="registration-card">
+        <header>
+            <div class="logo">☁️ DevOps<span>Cloud</span></div>
+            <h1>Join the Network</h1>
+            <p>Infrastructure managed by Terraform</p>
+        </header>
+
+        <form id="regForm">
+            <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" id="name" placeholder="John Doe" required>
+            </div>
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" id="email" placeholder="john@example.com" required>
+            </div>
+            <button type="submit" class="btn-register">Register for Event</button>
+        </form>
+    </main>
+
+    <script>
+        document.getElementById('regForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ name, email })
+                });
+                if(response.ok) alert("Success! User saved in AWS RDS.");
+                else alert("Error connecting to database.");
+            } catch (err) {
+                alert("Check if your backend is running!");
+            }
+        };
+    </script>
+</body>
+</html>
